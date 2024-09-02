@@ -10,13 +10,14 @@ import {
   createPXEClient,
   getContractInstanceFromDeployParams,
   DebugLogger,
+  GrumpkinScalar,
 } from '@aztec/aztec.js'
 import { getDeployedTestAccountsWallets } from '@aztec/accounts/testing'
-// import { getSchnorrAccount } from '@aztec/accounts/schnorr'
+import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 
 import { CounterContract } from '../artifacts/Counter'
 
-const PXE_URL = 'http://192.168.29.169:8080'
+const PXE_URL = 'http://localhost:8080'
 
 export const getPXEClient = async () => {
   const pxe = createPXEClient(PXE_URL)
@@ -43,26 +44,39 @@ export async function interactWithCounter() {
     console.log('Aztec sandbox info 43', nodeInfo)
     const accounts = await getDeployedTestAccountsWallets(pxe)
     console.log('Accounts', accounts)
-    const yashWallet = accounts[0]
-    const satyamWallet = accounts[1]
-    const yash = yashWallet.getAddress()
-    const satyam = satyamWallet.getAddress()
-    console.log(`Loaded yash's account at ${yash.toShortString()}`)
-    console.log(`Loaded satyam's account at ${satyam.toShortString()}`)
-    const contract = await CounterContract.deploy(satyamWallet, 5, satyam, satyam).send().deployed()
+    const aliceWallet = accounts[0]
+    const bobWallet = accounts[1]
+    const alice = aliceWallet.getAddress()
+    const bob = bobWallet.getAddress()
+    console.log(`Loaded alice's account at ${alice.toShortString()}`)
+    console.log(`Loaded bob's account at ${bob.toShortString()}`)
+    const contract = await CounterContract.deploy(bobWallet, 5, bob, bob).send().deployed()
     console.log(`Contract successfully deployed at address ${contract.address.toShortString()}`)
-    const counterContractSatyam = await CounterContract.at(contract.address, satyamWallet)
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    await counterContractSatyam.methods.increment(satyam, satyam).send().wait()
-    const satyamValue = await counterContractSatyam.methods.get_counter(satyam).simulate()
-    console.log(`Satyam's new counter ${satyamValue}`)
+    const counterContractbob = await CounterContract.at(contract.address, bobWallet)
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    await counterContractbob.methods.increment(bob, bob).send().wait()
+    const bobValue = await counterContractbob.methods.get_counter(bob).simulate()
+    console.log(`Bob's new counter ${bobValue}`)
   } catch (e) {
     console.error('Counter error', e)
   }
 }
 
 // async function deployContract() {}
+
+export async function createAccount() {
+  try{
+    const secretKey = Fr.random();
+    const signingPrivateKey = GrumpkinScalar.random();
+    const pxe = createPXEClient(PXE_URL);
+    const wallet = await getSchnorrAccount(pxe, secretKey, signingPrivateKey).waitSetup();
+    console.log('Account created', wallet.getAddress().toShortString());
+  }
+ catch(e){
+    console.error('Account error', e)
+ }
+}
