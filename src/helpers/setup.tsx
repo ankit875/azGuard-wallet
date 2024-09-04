@@ -11,8 +11,9 @@ import {
   getContractInstanceFromDeployParams,
   DebugLogger,
   GrumpkinScalar,
+  Contract,
 } from '@aztec/aztec.js'
-import { getDeployedTestAccountsWallets } from '@aztec/accounts/testing'
+import { getDeployedTestAccountsWallets, getInitialTestAccountsWallets } from '@aztec/accounts/testing'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 
 import { CounterContract } from '../artifacts/Counter'
@@ -79,4 +80,29 @@ export async function createAccount() {
  catch(e){
     console.error('Account error', e)
  }
+}
+
+export async function mintToken() {
+  try{
+    console.log('minting token');
+    const pxe = await getPXEClient()
+    await waitForPXE(pxe)
+    const accounts = await getDeployedTestAccountsWallets(pxe)
+    console.log('Accounts', accounts)
+    const aliceWallet = accounts[0]
+    const bobWallet = accounts[1]
+    const alice = aliceWallet.getAddress()
+    const bob = bobWallet.getAddress()
+    console.log(`Loaded alice's account at ${alice.toShortString()}`)
+    console.log(`Loaded bob's account at ${bob.toShortString()}`)
+    const contract = await CounterContract.deploy(bobWallet, 5, bob, bob).send().deployed()
+    console.log(`Contract successfully deployed at address ${contract.address.toShortString()}`)
+
+    const tx =await contract.methods.claim_public(alice, 100,0,1).send().wait();
+      // await tx.wait();
+    console.log('Token minted', tx.getTxHash());
+  }
+  catch(e){
+    console.error('Mint error', e)
+  }
 }
