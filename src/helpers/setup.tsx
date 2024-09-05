@@ -12,11 +12,13 @@ import {
   DebugLogger,
   GrumpkinScalar,
   Contract,
+  computeSecretHash,
 } from '@aztec/aztec.js'
 import { getDeployedTestAccountsWallets, getInitialTestAccountsWallets } from '@aztec/accounts/testing'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 
 import { CounterContract } from '../artifacts/Counter'
+import { TokenContract, TokenContractArtifact } from '@aztec/noir-contracts.js'
 
 const PXE_URL = 'http://localhost:8080'
 
@@ -76,6 +78,35 @@ export async function createAccount() {
     const pxe = createPXEClient(PXE_URL);
     const wallet = await getSchnorrAccount(pxe, secretKey, signingPrivateKey).waitSetup();
     console.log('Account created', wallet.getAddress().toShortString());
+    const deployedContract = await TokenContract.deploy(
+      wallet, // wallet instance
+      wallet.getAddress(), // account
+      'TokenName', // constructor arg1
+      'TokenSymbol', // constructor arg2
+      18,
+    )
+      .send()
+      .deployed();
+    
+    const contract = await Contract.at(deployedContract.address, TokenContractArtifact, wallet);
+    console.log('Contract deployed', contract.address.toShortString(), contract.address.toString());
+
+    const previouseMint = await contract.methods.balance_of_public('0x06769c994821ec652de929077fcdb0acf41a748d276ad1bfc97fa86e0837fa17').simulate();
+      const previousMint2 = await contract.methods.balance_of_private('0x06769c994821ec652de929077fcdb0acf41a748d276ad1bfc97fa86e0837fa17').simulate();
+    console.log(`Balance of ${wallet.getAddress()}: ${previouseMint}`, previousMint2);
+
+    const balance = await contract.methods.balance_of_public(wallet.getAddress()).simulate();
+    const balance1 = await contract.methods.balance_of_private(wallet.getAddress()).simulate();
+    console.log(`Balance of ${wallet.getAddress()}: ${balance}`, balance1);
+    
+    const secretHash = computeSecretHash(secretKey);
+      const receipt = await contract.methods.mint_private(BigInt(100), secretHash).send().wait();
+      const receiptPublic = await contract.methods.mint_public(wallet.getAddress(),BigInt(100)).send().wait();
+      console.log(`Successfully minted ${100} tokens. Transaction hash: ${receipt.txHash}, receiptPublic: ${receiptPublic.txHash}`);
+      const balanceMint = await contract.methods.balance_of_public(wallet.getAddress()).simulate();
+      const balanceMint1 = await contract.methods.balance_of_private(wallet.getAddress()).simulate();
+      console.log(`Balance of ${wallet.getAddress()}: ${balanceMint}`, balanceMint1);
+
   }
  catch(e){
     console.error('Account error', e)
@@ -87,6 +118,10 @@ export async function mintToken() {
     console.log('minting token');
     const pxe = await getPXEClient()
     await waitForPXE(pxe)
+
+
+    const account = await createAccount();
+  console.log('New account created:', account);
     const accounts = await getDeployedTestAccountsWallets(pxe)
     console.log('Accounts', accounts)
     const aliceWallet = accounts[0]
