@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
-// import { createAccount } from '../handlers/create-account.js'
-// import { CREATE_ACCOUNT_DEFAULT_PARAMS } from '../constants.js'
-
-// import { FeeOpts } from '../utils/options/fees.js'
 import {
     AccountWalletWithSecretKey,
     AztecAddress,
     computeSecretHash,
     Contract,
+    createPXEClient,
     ExtendedNote,
     Fr,
     Note,
@@ -27,9 +24,9 @@ export const WalletInteractions = () => {
   const [receipentAddress, setReceipentAddress] = useState('')
   const [transferAmount, setTransferAmount] = useState<number>(0)
   const [transactionStatus, setTransactionStatus] = useState<string>('')
+
   const handleCreateAccount = async () => {
     setIsInProgressObj({ ...isInProgressObj, createAccount: true })
-    // // createAccount({client: pxeAtom, ...CREATE_ACCOUNT_DEFAULT_PARAMS});
     const wallet = await createAccount()
     if (wallet) {
       setWallets([...wallets, wallet])
@@ -43,49 +40,34 @@ export const WalletInteractions = () => {
       return
     }
     setIsInProgressObj({ ...isInProgressObj, deployToken: true })
-    console.log('Deploying token')
     const tokenContract = await deployToken(currentWallet)
     setTokenContract(tokenContract)
-
     setIsInProgressObj({ ...isInProgressObj, deployToken: false })
   }
 
   const handleMintPublic100 = async () => {
     if (!tokenContract || !currentWallet) {
-      console.error('no contract or addrees')
+      console.error('no contract or address')
       return
     }
     setIsInProgressObj({ ...isInProgressObj, mintPublic: true })
-    const tx = await tokenContract.methods.mint_public(currentWallet.getAddress(), 100n).send()
-
-    console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-    console.log(chalk.blackBright('Awaiting transaction to be mined'))
+    const tx = await tokenContract.methods.mint_public(currentWallet.getAddress(), 100n).send()  
     const receipt = await tx.wait()
-    setTransactionStatus(`Transaction status: ${receipt.status}`);
-    console.log(
-      chalk.green(`Transaction has been mined on block ${chalk.bold(receipt.blockNumber)}`)
-    )
+    setTransactionStatus(`Transaction status: ${receipt.status}`)
     setIsInProgressObj({ ...isInProgressObj, mintPublic: false })
   }
 
   const handleMintPrivate100 = async () => {
     if (!tokenContract || !currentWallet) {
-      console.error('no contract or addrees')
+      console.error('no contract or address')
       return
     }
-
     setIsInProgressObj({ ...isInProgressObj, mintPrivate: true })
     const random = Fr.random()
     const secretHash = await computeSecretHash(random)
-
     const tx = await tokenContract.methods.mint_private(100n, secretHash).send()
-    console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-    console.log(chalk.blackBright('Awaiting transaction to be mined'))
     const receipt = await tx.wait()
-    setTransactionStatus(`Transaction status: ${receipt.status}`);
-    console.log(
-      chalk.green(`Transaction has been mined on block ${chalk.bold(receipt.blockNumber)}`)
-    )
+    setTransactionStatus(`Transaction status: ${receipt.status}`)
     const note = new Note([new Fr(100n), secretHash])
     const extendedNote = new ExtendedNote(
       note,
@@ -96,32 +78,19 @@ export const WalletInteractions = () => {
       receipt.txHash
     )
     await currentWallet.addNote(extendedNote)
-
-    console.log(
-      chalk.bgBlueBright(
-        `Redeeming created note for second wallet: ${currentWallet.getAddress()} \n`
-      )
-    )
-
     const tx1 = await tokenContract.methods
       .redeem_shield(currentWallet.getAddress(), 100n, random)
       .send()
-    console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-    console.log(chalk.blackBright('Awaiting transaction to be mined'))
     const receipt1 = await tx1.wait()
-    setTransactionStatus(`Transaction status: ${receipt1.status}`);
-    console.log(
-      chalk.green(`Transaction has been mined on block ${chalk.bold(receipt1.blockNumber)}`)
-    )
+    setTransactionStatus(`Transaction status: ${receipt1.status}`)
     setIsInProgressObj({ ...isInProgressObj, mintPrivate: false })
   }
 
   const checkBalancePublic = async () => {
     if (!tokenContract || !currentWallet) {
-      console.error('no contract or addrees')
+      console.error('no contract or address')
       return
     }
-
     const balance = await tokenContract.methods
       .balance_of_public(currentWallet.getAddress())
       .simulate()
@@ -132,10 +101,9 @@ export const WalletInteractions = () => {
 
   const checkBalancePrivate = async () => {
     if (!tokenContract || !currentWallet) {
-      console.error('no contract or addrees')
+      console.error('no contract or address')
       return
     }
-
     const balance = await tokenContract.methods
       .balance_of_private(currentWallet.getAddress())
       .simulate()
@@ -150,7 +118,6 @@ export const WalletInteractions = () => {
     }
     try {
       setIsInProgressObj({ ...isInProgressObj, transferPublic: true })
-
       const tx = await tokenContract.methods
         .transfer_public(
           currentWallet.getAddress(),
@@ -159,34 +126,26 @@ export const WalletInteractions = () => {
           BigInt(0)
         )
         .send()
-      console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-      console.log(chalk.blackBright('Awaiting transaction to be mined'))
       const receipt1 = await tx.wait()
-      console.log(
-        chalk.green(`Transaction has been mined on block ${chalk.bold(receipt1.blockNumber)}`)
-      )
+      setTransactionStatus(`Transaction status: ${receipt1.status}`)
     } catch (e:any) {
       toast.error(e.toString())
     } finally {
       setIsInProgressObj({ ...isInProgressObj, transferPublic: false })
     }
   }
+
   const handlePrivateTransfer = async () => {
     if (!receipentAddress || transferAmount === 0 || !tokenContract || !currentWallet) {
       return toast.error(`Invalid call`)
     }
-
     try {
       setIsInProgressObj({ ...isInProgressObj, transferPrivate: true })
       const tx = (await TokenContract.at(tokenContract.address, currentWallet)).methods
         .transfer(receipentAddress as any as AztecAddress, transferAmount)
         .send()
-      console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-      console.log(chalk.blackBright('Awaiting transaction to be mined'))
       const receipt1 = await tx.wait()
-      console.log(
-        chalk.green(`Transaction has been mined on block ${chalk.bold(receipt1.blockNumber)}`)
-      )
+      setTransactionStatus(`Transaction status: ${receipt1.status}`)
     } catch (e: any) {
       toast.error(e.toString())
     } finally {
@@ -198,7 +157,6 @@ export const WalletInteractions = () => {
     if (!receipentAddress || transferAmount === 0 || !tokenContract || !currentWallet) {
       return toast.error(`Invalid call`)
     }
-
     try {
       setIsInProgressObj({ ...isInProgressObj, movingPublic: true })
       const tx = await tokenContract.methods
@@ -209,12 +167,8 @@ export const WalletInteractions = () => {
           BigInt(0)
         )
         .send()
-      console.log(`Sent mint transaction ${await tx.getTxHash()}`)
-      console.log(chalk.blackBright('Awaiting transaction to be mined'))
       const receipt1 = await tx.wait()
-      console.log(
-        chalk.green(`Transaction has been mined on block ${chalk.bold(receipt1.blockNumber)}`)
-      )
+      setTransactionStatus(`Transaction status: ${receipt1.status}`)
     } catch (e: any) {
       toast.error(e.toString())
     } finally {
@@ -222,76 +176,164 @@ export const WalletInteractions = () => {
     }
   }
 
-  return (
-    <main className="h-screen w-full">
-      <h1> Wallet Interactions</h1>
-      <div className="flex h-full p-8">
-        <div className="flex-1">
-          {wallets.map((wallet, idx) => (
+  const handleMovingTokensPrivate= async () => {
+    if (!receipentAddress || transferAmount === 0 || !tokenContract || !currentWallet) {
+      return toast.error(`Invalid call`)
+    }
+    try {
+      setIsInProgressObj({ ...isInProgressObj, movingPrivate: true })
+      const random = Fr.random()
+      const secretHash = await computeSecretHash(random)
+      const tx = await tokenContract.methods
+        .shield(
+          currentWallet.getAddress(),
+          BigInt(transferAmount),
+          secretHash,
+          BigInt(0),
+        )
+        .send()
+      const receipt1 = await tx.wait()
+      setTransactionStatus(`Transaction status: ${receipt1.status}`)
+    } catch (e: any) {
+      toast.error(e.toString())
+    } finally {
+      setIsInProgressObj({ ...isInProgressObj, movingPrivate: false })
+    }
+  }
+
+return (
+  <main className="min-h-screen bg-gray-100 p-4 md:p-8">
+  <div className="flex flex-col md:flex-row gap-4">
+    {/* Wallets and Actions Section */}
+    <div className="flex-1 bg-white shadow-md rounded-lg p-4 min-w-[300px] w-full md:w-[350px]">
+      <h2 className="text-lg font-semibold mb-4">Wallets</h2>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {wallets.length > 0 ? (
+          wallets.map((wallet, idx) => (
             <button
               key={wallet.getAddress().toShortString()}
-              onClick={() => {
-                setCurrentWallet(wallet)
-              }}
+              onClick={() => setCurrentWallet(wallet)}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             >
-              Wallet{idx + 1}
+              Wallet {idx + 1}
             </button>
-          ))}
+          ))
+        ) : (
+          <div className="text-gray-500">No wallets created yet</div>
+        )}
+      </div>
 
-          <div className="actions flex flex-col border px-8 gap-6">
-            {/* <button onClick={() => interactWithCounter(pxeClient!)}> Wallet Interaction</button> */}
-            <button onClick={handleCreateAccount}>
-              Create New Wallet {isInProgressObj.createAccount && <Spinner />}
-            </button>
-            <button onClick={handleDeployToken} className="flex items-center">
-              Deploy Token {isInProgressObj.deployToken && <Spinner />}
-            </button>
-            <button onClick={handleMintPublic100} className="flex items-center">
-              Mint Public {isInProgressObj.mintPublic && <Spinner />}
-            </button>
-            <button onClick={handleMintPrivate100} className="flex items-center">
-              Mint Private {isInProgressObj.mintPrivate && <Spinner />}
-            </button>
-            <button onClick={checkBalancePublic}>Check Public Balance</button>
-            <button onClick={checkBalancePrivate}>Check Private Balance</button>
-          </div>
-
-          <div className="border border-blue-500 p-8 flex flex-col gap-2">
-            <input
-              type="text"
-              value={receipentAddress}
-              onChange={(e) => {
-                setReceipentAddress(e.target.value)
-              }}
-              placeholder="Enter Receipent Address"
-              className="px-4 py-2"
-            />
-            <input
-              type="number"
-              value={transferAmount}
-              onChange={(e) => {
-                setTransferAmount(+e.target.value)
-              }}
-              placeholder="Transfer Amount"
-              className="px-4 py-2"
-            />
-            <button onClick={handlePublicTransfer}>
-              Public Transfer {isInProgressObj.transferPublic && <Spinner />}
-            </button>
-            <button onClick={handlePrivateTransfer}>
-              Private Transfer {isInProgressObj.transferPrivate && <Spinner />}
-            </button>
-            <button onClick={handleMovingTokensPublic}>
-              Private To Public {isInProgressObj.movingPublic && <Spinner />}
-            </button>
-          </div>
+      <div className="border-t border-gray-300 pt-4">
+        <h2 className="text-lg font-semibold mb-2">Actions</h2>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleCreateAccount}
+            className="bg-green-500 text-white px-4 py-2 rounded-md flex items-center justify-between"
+          >
+            Create Wallet {isInProgressObj.createAccount && <Spinner />}
+          </button>
+          <button
+            onClick={handleDeployToken}
+            className="bg-green-500 text-white px-4 py-2 rounded-md flex items-center justify-between"
+          >
+            Deploy Token {isInProgressObj.deployToken && <Spinner />}
+          </button>
+          <button
+            onClick={handleMintPublic100}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center justify-between"
+          >
+            Mint Public {isInProgressObj.mintPublic && <Spinner />}
+          </button>
+          <button
+            onClick={handleMintPrivate100}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center justify-between"
+          >
+            Mint Private {isInProgressObj.mintPrivate && <Spinner />}
+          </button>
         </div>
-        <div className="output border flex flex-1 bg-pink-300 text-black flex-col gap-2 p-8">
-          {currentWallet && <p>Current Wallet Address: {currentWallet.getAddress().toString()}</p>}
-          {tokenContract && <p>Deployed Token Address: {tokenContract.address.toString()}</p>}
-          {transactionStatus && <p>{transactionStatus}</p>}
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <button
+            onClick={checkBalancePublic}
+            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          >
+            Check Public Balance
+          </button>
+          <button
+            onClick={checkBalancePrivate}
+            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          >
+            Check Private Balance
+          </button>
         </div>
       </div>
-    </main>
-  )
+
+      <div className="border-t border-gray-300 pt-4">
+        <h2 className="text-xl font-semibold mb-4">Transfers</h2>
+        <div className="flex flex-col gap-4">
+          <input
+            type="text"
+            value={receipentAddress}
+            onChange={(e) => setReceipentAddress(e.target.value)}
+            placeholder="Enter Recipient Address"
+            className="border border-gray-300 px-4 py-2 rounded-lg w-full"
+          />
+          <input
+            type="number"
+            value={transferAmount}
+            onChange={(e) => setTransferAmount(+e.target.value)}
+            placeholder="Transfer Amount"
+            className="border border-gray-300 px-4 py-2 rounded-lg w-full"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={handlePublicTransfer}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              Public Transfer {isInProgressObj.transferPublic && <Spinner />}
+            </button>
+            <button
+              onClick={handlePrivateTransfer}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              Private Transfer {isInProgressObj.transferPrivate && <Spinner />}
+            </button>
+            <button
+              onClick={handleMovingTokensPublic}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              Move Tokens Public {isInProgressObj.movingPublic && <Spinner />}
+            </button>
+            <button
+              onClick={handleMovingTokensPrivate}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              Move Tokens Private {isInProgressObj.movingPrivate && <Spinner />}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Output Section */}
+  <div className="bg-black shadow-md rounded-lg p-6 min-w-[300px] w-full md:w-[350px] h-80 overflow-y-auto">
+    <h2 className="text-xl font-semibold mb-4">Output</h2>
+    <div className="max-h-full">
+      {currentWallet && (
+        <p className="mb-2">Current Wallet Address: {currentWallet.getAddress().toString()}</p>
+      )}
+      {tokenContract && (
+        <p className="mb-2">Deployed Token Address: {tokenContract.address.toString()}</p>
+      )}
+      {transactionStatus && (
+        <p className="mt-4 text-green-600">{transactionStatus}</p>
+      )}
+    </div>
+  </div>
+  </div>
+</main>
+
+);
+
+  
 }
