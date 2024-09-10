@@ -14,9 +14,10 @@ import { toast } from 'react-hot-toast'
 import { TokenContract } from '@aztec/noir-contracts.js'
 import { useAccount } from '../hooks/useAccounts.js'
 import { Spinner } from './spinner.js'
+// import { creatCustomAccount } from '../helpers/AccountContract.js'
 
 export const WalletInteractions = () => {
-  const { deployToken, createAccount } = useAccount()
+  const { deployToken, createCustomAccount } = useAccount()
   const [wallets, setWallets] = useState<AccountWalletWithSecretKey[]>([])
   const [currentWallet, setCurrentWallet] = useState<AccountWalletWithSecretKey | null>(null)
   const [isInProgressObj, setIsInProgressObj] = useState<{ [key: string]: boolean }>({})
@@ -27,7 +28,7 @@ export const WalletInteractions = () => {
 
   const handleCreateAccount = async () => {
     setIsInProgressObj({ ...isInProgressObj, createAccount: true })
-    const wallet = await createAccount()
+    const wallet = await createCustomAccount()
     if (wallet) {
       setWallets([...wallets, wallet])
     }

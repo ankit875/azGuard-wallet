@@ -1,16 +1,19 @@
 import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 import {
-    AccountWalletWithSecretKey,
-    Contract,
-    createPXEClient,
-    Fr,
-    GrumpkinScalar,
-    PXE,
-    waitForPXE,
+  AccountManager,
+  AccountWalletWithSecretKey,
+  Contract,
+  createPXEClient,
+  Fr,
+  GrumpkinScalar,
+  PXE,
+  waitForPXE,
 } from '@aztec/aztec.js'
 
 import { TokenContract, TokenContractArtifact } from '@aztec/noir-contracts.js'
 import { RPC_URL } from '../constants.js'
+import { getPXEClient } from '../helpers/setup.js'
+import { SchnorrAccountContract } from '../helpers/AccountContract.js'
 
 export const useAccount = () => {// const pxe = useAtomValue(pxeAtom)
   const createAccount = async () => {
@@ -39,5 +42,22 @@ export const useAccount = () => {// const pxe = useAtomValue(pxeAtom)
     return token
   }
 
-  return { createAccount, deployToken }
+  const createCustomAccount = async () => {
+    try {
+      const secretKey = Fr.random();
+      // const signingPrivateKey = Buffer.from('private key','hex');
+      const pxe = await getPXEClient();
+
+      const account = new AccountManager(pxe, secretKey, new SchnorrAccountContract(GrumpkinScalar.random()));
+      const wallet = await account.waitSetup();
+      const address = wallet.getCompleteAddress().address;
+
+      console.log(`Account created at ${address}`);
+      return wallet
+    }
+    catch (e) {
+      console.error('Counter error', e)
+    }
+  }
+  return { createAccount, deployToken, createCustomAccount }
 }
