@@ -1,20 +1,9 @@
 import {
-  AccountWallet,
-  CompleteAddress,
-  ContractDeployer,
-  createDebugLogger,
-  Fr,
-  PXE,
-  waitForPXE,
-  TxStatus,
-  createPXEClient,
-  getContractInstanceFromDeployParams,
-  DebugLogger,
-  GrumpkinScalar,
+  Fr, waitForPXE, createPXEClient, GrumpkinScalar,
   Contract,
-  computeSecretHash,
+  computeSecretHash
 } from '@aztec/aztec.js'
-import { getDeployedTestAccountsWallets, getInitialTestAccountsWallets } from '@aztec/accounts/testing'
+import { getDeployedTestAccountsWallets } from '@aztec/accounts/testing'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 
 import { CounterContract } from '../artifacts/Counter'
