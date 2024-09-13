@@ -52,6 +52,8 @@ export const WalletInteractions = () => {
   const [transactionStatus, setTransactionStatus] = useState('');
   const [tokens, setTokens] = useState<{ id: number; name: string; symbol: string; logo: string; portfolio: number; price: number; priceChange: number; balance: number; amount: number; }[]>([]);
   const [selectedToken, setSelectedToken] = useState(null);
+  const [tab, setTab] = useState('Tokens');
+  const [deployTokenAddress, setDeployTokenAddress] = useState('');
 
   useEffect(() => {
     // Simulated token data
@@ -73,6 +75,7 @@ export const WalletInteractions = () => {
       const contract = await deployToken(currentWallet);
       setTokenContract(contract);
       console.log('Token deployed at:', contract.address.toString());
+      setDeployTokenAddress(contract.address.toString());
       toast.success('Token deployed successfully!');
     } catch (error) {
       toast.error('Failed to deploy token: ' + (error as Error).message);
@@ -210,7 +213,10 @@ export const WalletInteractions = () => {
       setIsLoading({ ...isLoading, [isPublic ? 'movingPublic' : 'movingPrivate']: false });
     }
   };
-  
+  const onSelecTab = (tab: string) => {
+    setTab(tab);
+    console.log(tab);
+  }
   return (
     <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white min-h-screen overflow-auto">
       <header className="bg-black bg-opacity-50 p-4 flex justify-between items-center">
@@ -231,11 +237,6 @@ export const WalletInteractions = () => {
           </div>
           <Bell className="text-gray-400 cursor-pointer hover:text-white transition-colors" />
           <WalletSection wallets={wallets} setWallets={setWallets} setCurrentWallet={setCurrentWallet} />
-
-          {/* <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:from-purple-600 hover:to-pink-600 transition-all">
-            <PlusCircle size={16} />
-
-          </button> */}
         </div>
       </header>
 
@@ -249,24 +250,27 @@ export const WalletInteractions = () => {
               <span className="text-red-500">-$0.57 (-0.16%)</span>
             </div>
             <div className="flex flex-wrap gap-2 mb-6">
-              {['Buy', 'Swap', 'Bridge', 'Send', 'Sell', 'Stake'].map((action) => (
+              {/* {['Buy', 'Swap', 'Bridge', 'Send', 'Sell', 'Stake'].map((action) => (
                 <button key={action} className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 rounded-full text-sm hover:from-blue-600 hover:to-purple-600 transition-all">
                   {action}
                 </button>
-              ))}
+              ))} */}
             </div>
             <div className="space-y-2">
-              {['Tokens', 'NFTs', 'DeFi', 'Transactions', 'Spending Caps'].map((tab) => (
+              {['Tokens', 'NFTs', 'DeFi', 'Transactions', 'Spending Caps'].map((tabAction) => (
                 <button
-                  key={tab}
-                  className={`block w-full text-left py-2 px-4 rounded transition-all ${tab === 'Tokens' ? 'bg-purple-700 shadow-lg' : 'hover:bg-gray-800'
+                  key={tabAction}
+                  className={`block w-full text-left py-2 px-4 rounded transition-all ${tabAction === tab ? 'bg-purple-700 shadow-lg' : 'hover:bg-gray-800'
                     }`}
+                    disabled={!(tabAction === 'Transactions' || tabAction === 'Tokens')}
+                    onClick={() => onSelecTab(tabAction)}
                 >
-                  {tab}
+                  {tabAction}
                 </button>
               ))}
             </div>
           </div>
+          {tab === 'Tokens' && (
           <div className="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm">
             <h2 className="text-2xl font-bold mb-4">Wallet Actions</h2>
             {/* <WalletSection wallets={wallets} setWallets={setWallets} setCurrentWallet={setCurrentWallet} /> */}
@@ -360,7 +364,15 @@ export const WalletInteractions = () => {
               </div>
               
               </div>
+            </div>)}
+          {tab === 'Transactions' && <div className="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm overflow-auto">
+            <h2 className="text-2xl font-bold mb-4">Transactions</h2>
+            <div className="items-center space-x-4 ">
+              <span className="text-2xl font-bold">Deployed Token Address:</span>
+              <span className="text-gray-400">{deployTokenAddress}</span>
             </div>
+           </div>}
+        
           </div>
 
 
