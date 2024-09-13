@@ -5,7 +5,7 @@ mod public_key_note;
 contract SchnorrAccount {
     use dep::std;
 
-    use dep::aztec::prelude::{AztecAddress, FunctionSelector, NoteHeader, PrivateContext, PrivateImmutable};
+    use dep::aztec::prelude::{AztecAddress, FunctionSelector, NoteHeader, PrivateContext, PrivateImmutable,PublicImmutable};
     use dep::aztec::encrypted_logs::encrypted_note_emission::encode_and_encrypt_note_with_keys;
     use dep::authwit::{
         entrypoint::{app::AppPayload, fee::FeePayload}, account::AccountActions,
@@ -20,6 +20,7 @@ contract SchnorrAccount {
     struct Storage {
         // docs:start:storage
         signing_public_key: PrivateImmutable<PublicKeyNote>,
+        nonce: PrivateImmutable<u64>,
         // docs:end:storage
     }
 
@@ -36,6 +37,7 @@ contract SchnorrAccount {
         // docs:start:initialize
         let mut pub_key_note = PublicKeyNote::new(signing_pub_key_x, signing_pub_key_y, this_keys.npk_m.hash());
         storage.signing_public_key.initialize(&mut pub_key_note).emit(encode_and_encrypt_note_with_keys(&mut context, this_keys.ovpk_m, this_keys.ivpk_m, this));
+        storage.nonce.initialize(0);
         // docs:end:initialize
     }
 
