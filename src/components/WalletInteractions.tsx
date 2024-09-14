@@ -114,7 +114,7 @@ export const WalletInteractions = () => {
           .send()
       }
       const receipt = await tx.wait();
-      setTransactionStatus(`Transaction status: ${receipt.status}`);
+      setTransactionStatus(`${receipt.status}`);
       toast.success(`${isPublic ? 'Public' : 'Private'} minting successful!`);
     } catch (error) {
       toast.error(`Failed to mint ${isPublic ? 'public' : 'private'}: ${String(error)}`);
@@ -164,7 +164,7 @@ export const WalletInteractions = () => {
           .send()
       }
       const receipt = await tx.wait();
-      setTransactionStatus(`Transaction status: ${receipt.status}`);
+      setTransactionStatus(`${receipt.status}`);
       toast.success(`${isPublic ? 'Public' : 'Private'} transfer successful!`);
     } catch (error) {
       toast.error(`Failed to transfer ${isPublic ? 'public' : 'private'}: ` + (error as Error).message);
@@ -205,7 +205,7 @@ export const WalletInteractions = () => {
       }
   
       const receipt = await tx.wait();
-      setTransactionStatus(`Transaction status: ${receipt.status}`);
+      setTransactionStatus(`${receipt.status}`);
       toast.success(`${isPublic ? 'Public' : 'Private'} token move successful!`);
     } catch (e: any) {
       toast.error(`Error moving ${isPublic ? 'public' : 'private'} tokens: ${e.message}`);
@@ -370,6 +370,10 @@ export const WalletInteractions = () => {
             <div className="items-center space-x-4 ">
               <span className="text-2xl font-bold">Deployed Token Address:</span>
               <span className="text-gray-400">{deployTokenAddress}</span>
+            </div>
+            <div className="items-center space-x-4 ">
+              <span className="text-2xl font-bold">Transaction Status:</span>
+              <span className="text-gray-400">{transactionStatus}</span>
             </div>
            </div>}
         
