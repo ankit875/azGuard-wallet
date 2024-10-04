@@ -1,11 +1,9 @@
 import { DefaultAccountContract } from "@aztec/accounts/defaults";
-import { AuthWitnessProvider, AuthWitness, AccountManager, ContractArtifact, computeSecretHash, Note, ExtendedNote } from "@aztec/aztec.js";
+import { AuthWitnessProvider, AuthWitness, ContractArtifact } from "@aztec/aztec.js";
 import { CompleteAddress, GrumpkinScalar } from "@aztec/circuits.js";
 import { Fr } from "@aztec/circuits.js";
 import { Schnorr } from "@aztec/circuits.js/barretenberg";
-import { getPXEClient } from "./setup.js";
-import {  TokenContract } from "@aztec/noir-contracts.js";
-import {SchnorrAccountContractArtifact} from '../artifacts/SchnorrAccount.js';
+import { SchnorrAccountContractArtifact } from '../artifacts/SchnorrAccount.js';
 
 
 export class SchnorrAccountContract extends DefaultAccountContract {

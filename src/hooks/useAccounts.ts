@@ -5,9 +5,7 @@ import {
   Contract,
   createPXEClient,
   Fr,
-  GrumpkinScalar,
-  PXE,
-  waitForPXE,
+  GrumpkinScalar, waitForPXE
 } from '@aztec/aztec.js'
 
 import { TokenContract, TokenContractArtifact } from '@aztec/noir-contracts.js'
@@ -58,6 +56,7 @@ export const useAccount = () => {// const pxe = useAtomValue(pxeAtom)
     catch (e) {
       console.error('Counter error', e)
     }
+    return 
   }
   return { createAccount, deployToken, createCustomAccount }
 }

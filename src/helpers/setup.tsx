@@ -6,7 +6,7 @@ import {
 import { getDeployedTestAccountsWallets } from '@aztec/accounts/testing'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr'
 
-import { CounterContract } from '../artifacts/Counter'
+import { CounterContract } from '../artifacts/Counter.js'
 import { TokenContract, TokenContractArtifact } from '@aztec/noir-contracts.js'
 
 const PXE_URL = 'http://localhost:8080'
@@ -42,7 +42,7 @@ export async function interactWithCounter() {
     const bob = bobWallet.getAddress()
     console.log(`Loaded alice's account at ${alice.toShortString()}`)
     console.log(`Loaded bob's account at ${bob.toShortString()}`)
-    const contract = await CounterContract.deploy(bobWallet, 5, bob, bob).send().deployed()
+    const contract = await CounterContract.deploy(bobWallet).send().deployed()
     console.log(`Contract successfully deployed at address ${contract.address.toShortString()}`)
     const counterContractbob = await CounterContract.at(contract.address, bobWallet)
     await counterContractbob.methods.increment(bob, bob).send().wait()
@@ -119,7 +119,7 @@ export async function mintToken() {
     const bob = bobWallet.getAddress()
     console.log(`Loaded alice's account at ${alice.toShortString()}`)
     console.log(`Loaded bob's account at ${bob.toShortString()}`)
-    const contract = await CounterContract.deploy(bobWallet, 5, bob, bob).send().deployed()
+    const contract = await CounterContract.deploy(bobWallet).send().deployed()
     console.log(`Contract successfully deployed at address ${contract.address.toShortString()}`)
 
     const tx =await contract.methods.claim_public(alice, 100,0,1).send().wait();

@@ -3,9 +3,7 @@
 /* eslint-disable */
 import {
   AztecAddress,
-  AztecAddressLike,
-  CompleteAddress,
-  Contract,
+  AztecAddressLike, Contract,
   ContractArtifact,
   ContractBase,
   ContractFunctionInteraction,
@@ -13,21 +11,10 @@ import {
   ContractMethod,
   ContractStorageLayout,
   ContractNotes,
-  DeployMethod,
-  EthAddress,
-  EthAddressLike,
-  EventSelector,
-  FieldLike,
-  Fr,
-  FunctionSelectorLike,
-  L1EventPayload,
-  loadContractArtifact,
+  DeployMethod, FieldLike,
+  Fr, loadContractArtifact,
   NoirCompiledContract,
-  NoteSelector,
-  Point,
-  PublicKey,
-  Wallet,
-  WrappedFieldLike,
+  NoteSelector, Wallet
 } from '@aztec/aztec.js'
 import CounterContractArtifactJson from '../../contracts/counter/target/counter-Counter.json' assert { type: 'json' }
 export const CounterContractArtifact = loadContractArtifact(
@@ -57,9 +44,9 @@ export class CounterContract extends ContractBase {
    */
   public static deploy(
     wallet: Wallet,
-    headstart: bigint | number,
-    owner: AztecAddressLike,
-    outgoing_viewer: AztecAddressLike
+    // headstart: bigint | number,
+    // owner: AztecAddressLike,
+    // outgoing_viewer: AztecAddressLike
   ) {
     return new DeployMethod<CounterContract>(
       Fr.ZERO,
@@ -76,9 +63,9 @@ export class CounterContract extends ContractBase {
   public static deployWithPublicKeysHash(
     publicKeysHash: Fr,
     wallet: Wallet,
-    headstart: bigint | number,
-    owner: AztecAddressLike,
-    outgoing_viewer: AztecAddressLike
+    // headstart: bigint | number,
+    // owner: AztecAddressLike,
+    // outgoing_viewer: AztecAddressLike
   ) {
     return new DeployMethod<CounterContract>(
       publicKeysHash,
@@ -94,7 +81,7 @@ export class CounterContract extends ContractBase {
    */
   public static deployWithOpts<M extends keyof CounterContract['methods']>(
     opts: { publicKeysHash?: Fr; method?: M; wallet: Wallet },
-    ...args: Parameters<CounterContract['methods'][M]>
+    // ...args: Parameters<CounterContract['methods'][M]>
   ) {
     return new DeployMethod<CounterContract>(
       opts.publicKeysHash ?? Fr.ZERO,
@@ -102,7 +89,7 @@ export class CounterContract extends ContractBase {
       CounterContractArtifact,
       CounterContract.at,
       Array.from(arguments).slice(1),
-      opts.method ?? 'constructor'
+      opts.method as string | any | undefined ?? 'constructor'
     )
   }
 
@@ -130,7 +117,10 @@ export class CounterContract extends ContractBase {
   }
 
   /** Type-safe wrappers for the public methods exposed by the contract. */
+// @ts-ignore
+// eslint-disable-next-line
   public override methods!: {
+    [x: string]: any
     /** increment(owner: struct, outgoing_viewer: struct) */
     increment: ((
       owner: AztecAddressLike,

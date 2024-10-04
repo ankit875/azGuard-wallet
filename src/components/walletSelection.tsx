@@ -49,7 +49,7 @@ export const WalletSection = ({ wallets, setWallets, setCurrentWallet }: { walle
                         className="bg-gray-800 text-white px-4 py-2 rounded-md w-fit"
                     >
                         {/* <option value="" disabled>Select a wallet</option> */}
-                        {wallets.map((wallet:any, idx:any) => (
+                        {wallets.map((wallet:any) => (
                             <option key={wallet.getAddress().toString()} value={wallet.getAddress().toString()}>
                                 {wallet.getAddress().toShortString()}
 

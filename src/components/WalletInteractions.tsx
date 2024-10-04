@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AccountWalletWithSecretKey, AztecAddress, computeSecretHash, Contract, ExtendedNote, Fr, Note } from '@aztec/aztec.js';
 import { TokenContract } from '@aztec/noir-contracts.js';
 import { useAccount } from '../hooks/useAccounts.js';
-import { Bell, Search, PlusCircle, ChevronDown, Loader, Wallet } from 'lucide-react';
+import { Bell, Search, Loader } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import WalletSection from './walletSelection.js';
 
@@ -30,7 +30,7 @@ const TokenRow = ({ token, onSelect }: { token: any, onSelect: any }) => (
 );
 
 export const WalletInteractions = () => {
-  const { deployToken, createCustomAccount } = useAccount();
+  const { deployToken,  } = useAccount();
   const [wallets, setWallets] = useState<AccountWalletWithSecretKey[]>([]);
   const [currentWallet, setCurrentWallet] = useState<AccountWalletWithSecretKey | null>(null);
   const [isLoading, setIsLoading] = useState<{
@@ -51,7 +51,7 @@ export const WalletInteractions = () => {
   const [transferAmount, setTransferAmount] = useState(0);
   const [transactionStatus, setTransactionStatus] = useState('');
   const [tokens, setTokens] = useState<{ id: number; name: string; symbol: string; logo: string; portfolio: number; price: number; priceChange: number; balance: number; amount: number; }[]>([]);
-  const [selectedToken, setSelectedToken] = useState(null);
+  const [, setSelectedToken] = useState(null);
   const [tab, setTab] = useState('Tokens');
   const [deployTokenAddress, setDeployTokenAddress] = useState('');
 
@@ -212,6 +212,7 @@ export const WalletInteractions = () => {
     } finally {
       setIsLoading({ ...isLoading, [isPublic ? 'movingPublic' : 'movingPrivate']: false });
     }
+    return;
   };
   const onSelecTab = (tab: string) => {
     setTab(tab);

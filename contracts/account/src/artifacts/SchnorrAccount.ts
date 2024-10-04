@@ -4,9 +4,7 @@
 /* eslint-disable */
 import {
   AztecAddress,
-  AztecAddressLike,
-  CompleteAddress,
-  Contract,
+  AztecAddressLike, Contract,
   ContractArtifact,
   ContractBase,
   ContractFunctionInteraction,
@@ -14,21 +12,11 @@ import {
   ContractMethod,
   ContractStorageLayout,
   ContractNotes,
-  DeployMethod,
-  EthAddress,
-  EthAddressLike,
-  EventSelector,
-  FieldLike,
+  DeployMethod, FieldLike,
   Fr,
-  FunctionSelectorLike,
-  L1EventPayload,
-  loadContractArtifact,
+  FunctionSelectorLike, loadContractArtifact,
   NoirCompiledContract,
-  NoteSelector,
-  Point,
-  PublicKey,
-  Wallet,
-  WrappedFieldLike,
+  NoteSelector, Wallet
 } from '@aztec/aztec.js';
 import SchnorrAccountContractArtifactJson from '../../target/account-SchnorrAccount.json' assert { type: 'json' };
 export const SchnorrAccountContractArtifact = loadContractArtifact(SchnorrAccountContractArtifactJson as NoirCompiledContract);
@@ -66,14 +54,18 @@ export class SchnorrAccountContract extends ContractBase {
   /**
    * Creates a tx to deploy a new instance of this contract.
    */
-  public static deploy(wallet: Wallet, signing_pub_key_x: FieldLike, signing_pub_key_y: FieldLike) {
+  public static deploy(wallet: Wallet, 
+    // signing_pub_key_x: FieldLike, signing_pub_key_y: FieldLike
+  ) {
     return new DeployMethod<SchnorrAccountContract>(Fr.ZERO, wallet, SchnorrAccountContractArtifact, SchnorrAccountContract.at, Array.from(arguments).slice(1));
   }
 
   /**
    * Creates a tx to deploy a new instance of this contract using the specified public keys hash to derive the address.
    */
-  public static deployWithPublicKeysHash(publicKeysHash: Fr, wallet: Wallet, signing_pub_key_x: FieldLike, signing_pub_key_y: FieldLike) {
+  public static deployWithPublicKeysHash(publicKeysHash: Fr, wallet: Wallet, 
+    // signing_pub_key_x: FieldLike, signing_pub_key_y: FieldLike
+  ) {
     return new DeployMethod<SchnorrAccountContract>(publicKeysHash, wallet, SchnorrAccountContractArtifact, SchnorrAccountContract.at, Array.from(arguments).slice(2));
   }
 
@@ -82,7 +74,7 @@ export class SchnorrAccountContract extends ContractBase {
    */
   public static deployWithOpts<M extends keyof SchnorrAccountContract['methods']>(
     opts: { publicKeysHash?: Fr; method?: M; wallet: Wallet },
-    ...args: Parameters<SchnorrAccountContract['methods'][M]>
+    // ...args: Parameters<SchnorrAccountContract['methods'][M]>
   ) {
     return new DeployMethod<SchnorrAccountContract>(
       opts.publicKeysHash ?? Fr.ZERO,
